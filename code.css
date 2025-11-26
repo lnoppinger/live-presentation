@@ -1,0 +1,55 @@
+.code-block > code:not([data-shown]), .code-block > span:not(.run, .copy), code[data-hidden] {
+    display: none;
+}
+.code-block > .tabs > span, .code-block > span:is(.run, .copy) {
+    cursor: pointer;
+}
+
+code {
+    white-space: pre;
+    display: block;
+    border: 2px solid black;
+    border-radius: 10px;
+    outline: none;
+    padding: 15px 5px 5px 5px;
+}
+
+.code-block {
+    position: relative;
+}
+.code-block > .tabs {
+    width: max-content;
+    margin-right: 10px;
+}
+.code-block > .tabs > span {
+    padding: 0 5px;
+}
+.code-block > .tabs > span[data-shown] {
+    border: 2px solid black;
+    border-radius: 10px 10px 0 0;
+    border-bottom: white 3px solid;
+}
+.code-block > :is(.run, .copy) {
+    position: absolute;
+    top: 23px;
+}
+
+@media print {
+    .code-block > code:not([data-shown]), .code-block > span:not(.run, .copy) {
+        display: block;
+    }
+    .code-block > .tabs, .code-block > span:is(.run, .copy) {
+        display: none;
+    }
+    .code-block * {
+        border: none !important;
+    }
+
+    .code-block > * {
+        margin: 0;
+        padding: 0;
+    }
+    .code-block > code {
+        margin-bottom: 20px;
+    }
+}

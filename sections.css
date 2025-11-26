@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+    min-height: 300px;
+}
+section:not([data-shown]) {
+    display: none;
+}
+@media print {
+    section:not([data-shown]) {
+        display: flex;
+    }
+    section {
+        width: 100%;
+        border-bottom: 2px solid black;
+        break-inside: avoid;
+        break-after: auto;
+    }
+}
