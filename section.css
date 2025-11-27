@@ -4,14 +4,15 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    min-width: 100vb;
 }
 section {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: 20px;
-    min-height: 300px;
+    margin: 2vw;
 }
 section:not([data-shown]) {
     display: none;
@@ -21,9 +22,9 @@ section:not([data-shown]) {
         display: flex;
     }
     section {
-        width: 100%;
         border-bottom: 2px solid black;
         break-inside: avoid;
         break-after: auto;
+        min-height: 300px;
     }
 }

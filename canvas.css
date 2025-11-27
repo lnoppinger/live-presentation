@@ -1,0 +1,57 @@
+canvas {
+    border: 2px solid black;
+    border-radius: 10px;
+    touch-action: none;
+}
+
+img.canvas {
+    display: none;
+}
+
+#colors-bar {
+    position: fixed;
+    right: 3vw;
+    bottom: 3vw;
+    height: 2vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    align-items: center;
+}
+#colors-bar:not([data-shown]) {
+    display: none;
+}
+
+#colors-bar > .color {
+    position: relative;
+    display: block;
+    height: 15px;
+    width: 15px;
+    border-radius: 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    border: 1px solid black;
+    outline: 1px solid white;
+    font-size: 15px;
+    margin: 2.5px 5.5px;
+}
+
+#colors-bar > .color[data-selected] {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    margin: 0 3px;
+    --margin: -3px;
+}
+
+#colors-bar > .color::before {
+    content: '';
+    position: absolute;
+    top: var(--margin);
+    left: var(--margin);
+    right: var(--margin);
+    bottom: var(--margin);
+    pointer-events: auto;
+    background: transparent;
+    --margin: -5.5px
+}

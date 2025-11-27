@@ -1,14 +1,10 @@
-let codeLangs = []
-let maxWidth, maxHeight
-document.querySelectorAll("code").forEach(code => {
+document.querySelectorAll("*:not(.code-block) code").forEach(code => {
     let codeTab = document.createElement("span")
     codeTab.innerText = code.dataset.file
 
     if(!code.previousElementSibling.classList.contains("code-block")) {
         maxHeight = 0
         maxWidth  = 0
-        let lang = code.dataset.lang?.toLowerCase() || text
-        codeLangs.push(lang)
 
         code.dataset.shown = "true"
         code.setAttribute("style", "border-radius: 0 10px 10px 10px")
@@ -16,7 +12,7 @@ document.querySelectorAll("code").forEach(code => {
 
         let codeBlock = document.createElement("div")
         codeBlock.classList.add("code-block")
-        codeBlock.dataset.lang = lang
+        codeBlock.dataset.lang = code.dataset.lang
         code.before(codeBlock)
 
         let tabs = document.createElement("div")
@@ -36,12 +32,6 @@ document.querySelectorAll("code").forEach(code => {
         codeBlock.appendChild(copy)
     }
 
-    if(!code.nextElementSibling?.classList.contains("code-block")) {
-        let tabsHeight = code.previousElementSibling.firstElementChild.clientHeight
-        code.previousElementSibling.querySelector(".run" ).style.top = String(tabsHeight + 5) + "px"
-        code.previousElementSibling.querySelector(".copy").style.top = String(tabsHeight + 5) + "px"
-    }
-
     if(!code.dataset.hidden) {
         code.previousElementSibling.firstElementChild.append(codeTab.cloneNode(true))
         code.previousElementSibling.append(codeTab)
@@ -51,9 +41,17 @@ document.querySelectorAll("code").forEach(code => {
     code.setAttribute("contenteditable", true)
 })
 
-document.querySelectorAll(".code-block").forEach(codeBlock => {
-    updateCodeBlockSize(codeBlock)
+if(document.querySelector("#code-stdio") == null) {
+    let dialog = document.createElement("dialog")
+    dialog.id = "code-stdio"
+    document.body.appendChild(dialog)
 
+    let p = document.createElement("p")
+    p.classList.add("stdio")
+    dialog.appendChild(p)
+}
+
+document.querySelectorAll(".code-block").forEach(codeBlock => {
     codeBlock.querySelectorAll(".tabs > span").forEach( elem => elem.addEventListener("click", e => {
         codeBlock.querySelectorAll("code"      ).forEach(n => delete n.dataset.shown)
         codeBlock.querySelectorAll(".tabs span").forEach(n => delete n.dataset.shown)
@@ -65,7 +63,13 @@ document.querySelectorAll(".code-block").forEach(codeBlock => {
         let files = []
         codeBlock.querySelectorAll("code").forEach(c => {
             files.push({
-                name: c.dataset.name,
+                name: c.dataset.file,
+                code: c.innerText
+            })
+        })
+        document.querySelectorAll("code[data-global]").forEach(c => {
+            files.push({
+                name: c.dataset.file,
                 code: c.innerText
             })
         })
@@ -80,12 +84,14 @@ document.querySelectorAll(".code-block").forEach(codeBlock => {
     })
 
     codeBlock.querySelectorAll("code").forEach(elem => elem.addEventListener("keyup", e => {
-        updateCodeBlockSize(codeBlock)
-        update()
+        document.dispatchEvent(new Event("render"))
     }))
 })
 
-function updateCodeBlockSize(codeBlock) {
+document.addEventListener("renderend", e => {
+    let codeBlock = document.querySelector("section[data-shown] .code-block")
+    if(codeBlock == null) return
+
     let maxHeight  = 0
     let maxWidth   = codeBlock.firstElementChild.clientWidth +10
 
@@ -106,4 +112,18 @@ function updateCodeBlockSize(codeBlock) {
     codeBlock.querySelectorAll("code").forEach( code => code.style.height   = String(maxHeight-24) + "px")
     codeBlock.style.width  = String(maxWidth) + "px"
     codeBlock.style.height = String(maxHeight + 19) + "px"
+})
+
+async function run(lang, files) {
+    lang = lang.toLowerCase()
+    if(config.runner[lang] == null) return
+
+    let dialog = document.querySelector("dialog#code-stdio")
+    dialog.open = true
+    let stdioElem = dialog.querySelector(".stdio")
+    await config.runner[lang](files, stdioElem)
+    dialog.open = false
 }
+
+function runJava(files, stdioElem) {}
+function runSql (files, stdioElem) {}
