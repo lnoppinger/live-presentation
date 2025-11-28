@@ -4,10 +4,6 @@ canvas {
     touch-action: none;
 }
 
-img.canvas {
-    display: none;
-}
-
 #colors-bar {
     position: fixed;
     right: 3vw;
@@ -17,9 +13,6 @@ img.canvas {
     flex-direction: row;
     justify-content: right;
     align-items: center;
-}
-#colors-bar:not([data-shown]) {
-    display: none;
 }
 
 #colors-bar > .color {

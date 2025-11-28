@@ -1,23 +1,47 @@
 body {
     margin: 0;
+}
+main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    min-width: 100vb;
+    margin: 2vi;
+    min-height: calc(100vh - 4vi);
+    min-width: 96vi;
+    width: fit-content;
+    height: fit-content;
 }
-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 2vw;
+
+main[data-view=n] {
+    zoom: 0.7;
+    border: 2px solid black
 }
-section:not([data-shown]) {
+
+main[data-view=n] :is(aside, footer)  {
+    position: absolute;
+    display: block;
+    top: 1vi;
+    right: 1vi;
+    bottom: 1vi;
+    left: 50vi;
+    zoom: 2;
+}
+main[data-view=n] footer {
+    top: 50vh;
+    left: 1vi;
+    right: 22vi;
+}
+
+#html, #html-head, main aside, main footer{
     display: none;
 }
-@media print {
+
+pre.edit {
+    border: 2px solid black;
+    border-radius: 10px;
+}
+/* @media print {
     section:not([data-shown]) {
         display: flex;
     }
@@ -27,4 +51,4 @@ section:not([data-shown]) {
         break-after: auto;
         min-height: 300px;
     }
-}
+} */

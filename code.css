@@ -34,7 +34,7 @@ code {
     top: 23px;
 }
 
-@media print {
+/* @media print {
     .code-block > code:not([data-shown]), .code-block > span:not(.run, .copy) {
         display: block;
     }
@@ -52,4 +52,4 @@ code {
     .code-block > code {
         margin-bottom: 20px;
     }
-}
+} */

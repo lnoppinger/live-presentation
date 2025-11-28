@@ -1,8 +1,11 @@
-document.querySelectorAll("*:not(.code-block) code").forEach(code => {
+document.addEventListener("render", e => {
+
+document.querySelectorAll("main > code").forEach(code => {
+    let codeBlock = code.parentElement.querySelector(".code-block")
     let codeTab = document.createElement("span")
     codeTab.innerText = code.dataset.file
 
-    if(!code.previousElementSibling.classList.contains("code-block")) {
+    if(codeBlock == null) {
         maxHeight = 0
         maxWidth  = 0
 
@@ -10,8 +13,8 @@ document.querySelectorAll("*:not(.code-block) code").forEach(code => {
         code.setAttribute("style", "border-radius: 0 10px 10px 10px")
         codeTab.dataset.shown = "true"
 
-        let codeBlock = document.createElement("div")
-        codeBlock.classList.add("code-block")
+        codeBlock = document.createElement("div")
+        codeBlock.classList.add("code-block", "ignore-key-down")
         codeBlock.dataset.lang = code.dataset.lang
         code.before(codeBlock)
 
@@ -33,25 +36,36 @@ document.querySelectorAll("*:not(.code-block) code").forEach(code => {
     }
 
     if(!code.dataset.hidden) {
-        code.previousElementSibling.firstElementChild.append(codeTab.cloneNode(true))
-        code.previousElementSibling.append(codeTab)
+        codeBlock.firstElementChild.append(codeTab.cloneNode(true))
+        codeBlock.append(codeTab)
     }
-    code.previousElementSibling.append(code)
+    codeBlock.append(code)
     code.innerText = code.innerText.trim()
     code.setAttribute("contenteditable", true)
 })
 
-if(document.querySelector("#code-stdio") == null) {
-    let dialog = document.createElement("dialog")
-    dialog.id = "code-stdio"
-    document.body.appendChild(dialog)
+document.querySelectorAll("main .code-block").forEach(codeBlock => {
+    let maxHeight  = 0
+    let maxWidth   = codeBlock.firstElementChild.clientWidth +10
 
-    let p = document.createElement("p")
-    p.classList.add("stdio")
-    dialog.appendChild(p)
-}
+    codeBlock.querySelectorAll("code").forEach( code => {
+        let display = code.style.display
+        let height  = code.style.height
+        let width   = code.style.width
+        code.style.display = "block"
+        code.style.height  = "max-content"
+        code.style.width   = "max-content"
+        if(maxWidth  < code.clientWidth  +14) maxWidth  = code.clientWidth  +14
+        if(maxHeight < code.clientHeight +24) maxHeight = code.clientHeight +24
+        code.style.display = display
+        code.style.height  = height
+        code.style.width   = width
+    })
 
-document.querySelectorAll(".code-block").forEach(codeBlock => {
+    codeBlock.querySelectorAll("code").forEach( code => code.style.height   = String(maxHeight-24) + "px")
+    codeBlock.style.width  = String(maxWidth) + "px"
+    codeBlock.style.height = String(maxHeight + 19) + "px"
+
     codeBlock.querySelectorAll(".tabs > span").forEach( elem => elem.addEventListener("click", e => {
         codeBlock.querySelectorAll("code"      ).forEach(n => delete n.dataset.shown)
         codeBlock.querySelectorAll(".tabs span").forEach(n => delete n.dataset.shown)
@@ -84,46 +98,32 @@ document.querySelectorAll(".code-block").forEach(codeBlock => {
     })
 
     codeBlock.querySelectorAll("code").forEach(elem => elem.addEventListener("keyup", e => {
-        document.dispatchEvent(new Event("render"))
+        if(elem == null) elem = document.querySelector("main code[data-shown]")
+
+        let sel = window.getSelection()
+        if(sel.rangeCount < 1) return
+        let range = sel.getRangeAt(0)
+
+        let id = elem.dataset.id
+        let startOffset = range.startOffset
+        let endOffset   = range.endOffset
+        let startElemIndex, endElemIndex
+        elem.childNodes.forEach((node, i) => {
+            if(range.startContainer == node) startElemIndex = i
+            if(range.endContainer   == node) endElemIndex   = i
+        })
+
+        document.querySelector(`#html [data-id='${elem.dataset.id}']`).innerHTML = elem.innerHTML
+        config.section.syncTabs(1)
+        sel.removeAllRanges()
+        
+        let elemNew = document.querySelector(`main code[data-id='${id}']`)
+        let newRange = document.createRange()
+        newRange.setStart(startElemIndex == null ? elemNew : elemNew.childNodes[startElemIndex], startOffset)
+        newRange.setEnd(  endElemIndex   == null ? elemNew : elemNew.childNodes[endElemIndex  ], endOffset  )
+        sel.addRange(newRange)
     }))
-})
+})})
 
-document.addEventListener("renderend", e => {
-    let codeBlock = document.querySelector("section[data-shown] .code-block")
-    if(codeBlock == null) return
-
-    let maxHeight  = 0
-    let maxWidth   = codeBlock.firstElementChild.clientWidth +10
-
-    codeBlock.querySelectorAll("code").forEach( code => {
-        let display = code.style.display
-        let height  = code.style.height
-        let width   = code.style.width
-        code.style.display = "block"
-        code.style.height  = "max-content"
-        code.style.width   = "max-content"
-        if(maxWidth  < code.clientWidth  +14) maxWidth  = code.clientWidth  +14
-        if(maxHeight < code.clientHeight +24) maxHeight = code.clientHeight +24
-        code.style.display = display
-        code.style.height  = height
-        code.style.width   = width
-    })
-
-    codeBlock.querySelectorAll("code").forEach( code => code.style.height   = String(maxHeight-24) + "px")
-    codeBlock.style.width  = String(maxWidth) + "px"
-    codeBlock.style.height = String(maxHeight + 19) + "px"
-})
-
-async function run(lang, files) {
-    lang = lang.toLowerCase()
-    if(config.runner[lang] == null) return
-
-    let dialog = document.querySelector("dialog#code-stdio")
-    dialog.open = true
-    let stdioElem = dialog.querySelector(".stdio")
-    await config.runner[lang](files, stdioElem)
-    dialog.open = false
-}
-
-function runJava(files, stdioElem) {}
-function runSql (files, stdioElem) {}
+if(config.code.java == null) config.code.java = (files) => {}
+if(config.code.sql  == null) config.code.sql  = (files) => {}

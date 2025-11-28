@@ -1,0 +1,15 @@
+.math-block {
+    position: relative;
+    width: fit-content;
+    padding: 10px;
+    padding-top: 30px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.math-block .copy {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+}
