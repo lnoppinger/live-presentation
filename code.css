@@ -8,7 +8,7 @@
 code {
     white-space: pre;
     display: block;
-    border: 2px solid black;
+    border: 2px solid var(--black);
     border-radius: 10px;
     outline: none;
     padding: 15px 5px 5px 5px;
@@ -25,9 +25,9 @@ code {
     padding: 0 5px;
 }
 .code-block > .tabs > span[data-shown] {
-    border: 2px solid black;
+    border: 2px solid var(--black);
     border-radius: 10px 10px 0 0;
-    border-bottom: white 3px solid;
+    border-bottom: var(--white) 3px solid;
 }
 .code-block > :is(.run, .copy) {
     position: absolute;

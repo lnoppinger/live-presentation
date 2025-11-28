@@ -1,4 +1,3 @@
-config.canvas.currentColor = "eraser"
 config.canvas.isDrawing    = false
 
 document.addEventListener("render", e => {
@@ -21,14 +20,15 @@ eraserElem.classList.add("material-symbols-outlined", "eraser", "color")
 eraserElem.innerText = "ink_eraser"
 eraserElem.dataset.color = "eraser"
 eraserElem.dataset.selected = true
-eraserElem.style.backgroundColor = "#ffffff"
+eraserElem.style.backgroundColor = "var(--white)"
 colorsBar.appendChild(eraserElem)
 
 document.querySelectorAll("#colors-bar > .color").forEach( elem => elem.addEventListener("click", e => {
     elem.parentElement.querySelectorAll(".color").forEach(c => delete c.dataset.selected)
-    config.canvas.currentColor = elem.dataset.color
     elem.dataset.selected = true
 }))
+
+document.dispatchEvent(new Event("scroll"))
 
 document.querySelectorAll("main canvas").forEach(canvas => {
     let ctx = canvas.getContext("2d")
@@ -44,10 +44,15 @@ document.querySelectorAll("main canvas").forEach(canvas => {
     canvas.addEventListener("pointerdown", e => {
         config.canvas.isDrawing = true
         ctx.beginPath()
+
+        let lineWidth = config.canvas.lineWidth
+        if(document.querySelector("main .color[data-selected]").classList.contains("eraser")) {
+            lineWidth += config.canvas.eraseWidthOffset
+        }
+        ctx.lineWidth = lineWidth
+        ctx.strokeStyle = getComputedStyle(document.querySelector("main .color[data-selected]")).getPropertyValue("background-color")
+
         ctx.moveTo( e.offsetX, e.offsetY )
-        ctx.lineWidth = config.canvas.lineWidth
-        if(config.canvas.currentColor == "eraser") ctx.lineWidth += config.canvas.eraseWidthOffset
-        ctx.strokeStyle = config.canvas.currentColor == "eraser" ? "#ffffff" : config.canvas.currentColor
         canvas.setPointerCapture(e.pointerId)
     })
 
@@ -65,6 +70,7 @@ document.querySelectorAll("main canvas").forEach(canvas => {
     })
     canvas.addEventListener("pointerleave", e => {
         config.canvas.isDrawing = false
+        canvas.releasePointerCapture(e.pointerId)
     })
 })})
 

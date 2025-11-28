@@ -10,10 +10,9 @@ let config = {
         lineWidth: 3,
         lineWidthStepSize: 1,
         eraseWidthOffset: 30,
-        currentColor: "eraser",
         isDrawing: false,
         colors: [
-            "#000000",
+            "var(--black)",
             "#ff0000",
             "#00ff00",
             "#0000ff"
