@@ -11,34 +11,47 @@
     </section>
 
     <section>
-        <p>
-            Hier ist ein einfaches Tutorial
-        </p>
-        
-        <code data-lang="java" data-file="Test.java">
-class Main {
+        <code data-cmd="CMD" data-file="Test.java">
+class Test {
   public static void main(String[] args) {
     System.out.println("Try programiz.pro");
   }
 }
         </code>
-        <code data-lang="java" data-file="Test2.java">
-class Main {
-  public static void main(String[] args) {
-    System.out.println("Try programiz.pro number 2");
-  }
+    </section>
 
-  asd
-  asd
-  fa
-  sfd
-  alkdfjalskjalsdfasd
-  fasdf
-  alkdfjalskjalsdf
+    <section>
+        <p>
+            Hier ist ein einfaches Tutorial
+        </p>
+        
+        <code data-cmd="java Test.java" data-file="Test.java">
+class Test {
+  public static void main(String[] args) {
+    System.out.println("Try programiz.pro");
+  }
 }
         </code>
-        <code data-file="askfjalsjflakjdkajfjaljdjasdfjkasjfklasjfklajsdf.java">
+        <code data-cmd="java Test.java" data-file="Test2.java">
+class Test2 {
+  public static void main(String[] args) {
+    int number = 2;
+    System.out.println("Try programiz.pro number " + number);
+  }
+}
+        </code>
+        <code data-cmd="touch askfjalsjflakjdkajfjaljdjasdfjkasjfklasjfklajsdf.txt" data-file="askfjalsjflakjdkajfjaljdjasdfjkasjfklasjfklajsdf.txt">
         adsfasdfasdfasdfa
+        </code>
+    </section>
+
+    <section>
+        <code data-cmd="sqlite3 -header :memory: < test.sql" data-file="test.sql">
+CREATE TABLE test(
+    nr int
+);
+INSERT INTO test VALUES(1), (4), (5), (6);
+SELECT * FROM test;
         </code>
     </section>
 
@@ -50,8 +63,7 @@ class Main {
     <section>
         <math> a^2 + b^2 = c^2 </math>
         <math>
-            a_{ij} = d^2 f(p)(e_i, e_j) = \part_{ij} f (p)
-            \phi : \hat mathcal{L}^n (V,W) \rightarrow mathcal{L}^n (V,W)
+            a_{ij} = d^2 f(p) (e_i, e_j) = \part_{ij} f (p) \phi : \hat mathcal{L}^n (V,W) \rightarrow mathcal{L}^n (V,W)
         </math>
         <aside>
             Das sind wirklich wichtige formeln
@@ -72,5 +84,9 @@ class Main {
             Ende
         </p>
     </section>
+
+    <script>
+            config.colors = ["yellow", "darkgreen", "lightblue", "pink", "violet", "brown", "lightgray", "turquoise", "green", "red", "blue"]
+    </script>
 </body>
 </html>

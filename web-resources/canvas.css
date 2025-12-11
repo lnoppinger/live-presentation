@@ -2,19 +2,22 @@ canvas {
     border: 2px solid var(--black);
     border-radius: 10px;
     touch-action: none;
-    color: transparent !important;
-    background-color: transparent !important;
 }
 
 #colors-bar {
     position: fixed;
-    right: 3vw;
-    bottom: 3vw;
-    height: 2vw;
+    right: 4vi;
+    bottom: 3vi;
+    height: 2vi;
     display: flex;
     flex-direction: row;
     justify-content: right;
     align-items: center;
+}
+body:has(main[data-view="n"]) #colors-bar {
+    zoom: 0.7;
+    right: 68vi;
+    bottom: 68vb;
 }
 
 #colors-bar > .color {

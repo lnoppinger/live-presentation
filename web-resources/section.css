@@ -10,11 +10,10 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: 2vi;
-    min-height: calc(100vh - 4vi);
-    min-width: 96vi;
-    width: fit-content;
-    height: fit-content;
+    padding: 2vi;
+    height: calc(100vb - 4vi - 4px);
+    width: calc(96vi - 4px);
+    overflow: auto;
 }
 
 main[data-view=n] {

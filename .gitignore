@@ -1,1 +1,5 @@
 *-alt.*
+code-runner
+!code-runner/code-runner.js
+package*.json
+node_modules

@@ -25,14 +25,47 @@ code {
     padding: 0 5px;
 }
 .code-block > .tabs > span[data-shown] {
+    position: relative;
     border: 2px solid var(--black);
     border-radius: 10px 10px 0 0;
     border-bottom: var(--white) 3px solid;
 }
+.code-block > .tabs > span[data-shown]::before, .code-block > .tabs > span[data-shown]::after {
+    position: absolute;
+    bottom: -4px;
+    left: -2px;
+    content: " ";
+    display: block;
+    width: 2px;
+    height: 6px;
+    z-index: 2;
+    background-color: var(--black);
+}
+.code-block > .tabs > span[data-shown]::after {
+    left: unset;
+    right: -2px;
+}
+
 .code-block > :is(.run, .copy) {
     position: absolute;
     top: 23px;
 }
+
+#terminal {
+    display: none;
+}
+#terminal[data-shown] {
+    position: fixed;
+    display: block;
+    top: 5vi;
+    left: 5vi;
+    z-index: 10;
+}
+body:has(main[data-view="n"]) #terminal {
+    zoom: 0.7
+}
+
+
 
 /* @media print {
     .code-block > code:not([data-shown]), .code-block > span:not(.run, .copy) {

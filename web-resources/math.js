@@ -1,4 +1,4 @@
-document.addEventListener("render", e => {
+shared.main.addEventListener("render", e => {
 
 document.querySelectorAll("main math").forEach(mathElem => {
     let mathBlock = document.createElement("div")
@@ -11,7 +11,9 @@ document.querySelectorAll("main math").forEach(mathElem => {
     mathBlock.appendChild(copy)
 
     let outElem = document.createElement("span")
-    katex.render(mathElem.textContent, outElem, config.math)
+    katex.render(mathElem.textContent, outElem, {
+        throwOnError: false
+    })
     mathElem.dataset.text = mathElem.textContent.replace(/\s+/g, "")
     mathElem.innerHTML = outElem.querySelector("math").innerHTML
     mathBlock.appendChild(mathElem)
