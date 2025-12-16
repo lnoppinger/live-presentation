@@ -1,38 +1,43 @@
 window.isDrawing = false
+window.preventScrollEndC = false
 shared.main.addEventListener("resize", e => {
-    shared.main.dispatchEvent(new Event("scroll"))
+    shared.main.dispatchEvent(new Event("scrollend"))
 })
 
-window.drawCanvas = (canvas, oldHeight=canvas.height) => {
+window.drawCanvas = (canvas, oldWidth=-1, oldHeight=-1) => {
+    if(oldWidth  < 0) oldWidth  = canvas.width
+    if(oldHeight < 0) oldHeight = canvas.height
+
     let ctx = canvas.getContext("2d")
     let img = new Image()
     img.onload = function () {
-        ctx.clearRect(0, 0, canvas.width, oldHeight)
-        ctx.drawImage(img, 0, 0, canvas.width, oldHeight)
-        document.querySelector(`#html [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0, oldWidth, oldHeight)
+        document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
     }
-    img.src = document.querySelector(`#html [data-id='${canvas.dataset.id}']`).innerHTML
+    img.src = document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).innerHTML
 }
 
-shared.main.addEventListener("scroll", e => {
+shared.main.addEventListener("scrollend", e => {
     let canvas = document.querySelector("main canvas[data-flex]")
-    if(canvas == null) return
+    if(canvas == null || shared.main.view == "p") return
 
-    let heightCalcMax = shared.main.clientHeight*2   - canvas.offsetTop + shared.main.scrollTop
-    let heightCalcMin = shared.main.clientHeight*1.2 - canvas.offsetTop + shared.main.scrollTop
-    if(canvas.width <= 300 || heightCalcMin > canvas.height ) {
-        let oldHeight = canvas.height
+    let oldWidth = canvas.width
+    let calcWidth = Math.floor(Number(getComputedStyle(canvas).getPropertyValue("width").replace("px", ""))) - 10
+    if(oldWidth < calcWidth) {
+        canvas.width = calcWidth
+        document.querySelector(` [data-id='${canvas.dataset.id}']`).width = calcWidth
+    }
 
-        if(canvas.width <= 300) {
-            canvas.width = Math.floor(shared.main.clientWidth * 0.94 - 5)
-            document.querySelector(`#html [data-id='${canvas.dataset.id}']`).width = canvas.width
-        }
-        canvas.height = heightCalcMax
-        document.querySelector(`#html [data-id='${canvas.dataset.id}']`).height = canvas.height
+    let oldHeight = canvas.height
+    let calcHeight = shared.main.scrollTop + 0.96*shared.main.clientHeight - canvas.offsetTop
+    if(oldHeight < calcHeight) {
+        canvas.height = calcHeight
+        document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).height = calcHeight
+    }
 
-        drawCanvas(canvas, oldHeight)
-        shared.syncTabs(0)
-        shared.main.dispatchEvent(new Event("resize"))
+    if(oldHeight < calcHeight || oldWidth < calcWidth) {
+        drawCanvas(canvas, oldWidth, oldHeight)
     }
 })
 
@@ -41,6 +46,7 @@ if(document.querySelector("main:not([data-view=overview]) canvas") == null) retu
 
 let colorsBar = document.createElement("div")
 colorsBar.id = "colors-bar"
+colorsBar.classList.add("no-print")
 shared.main.appendChild(colorsBar)
 
 config.colors.forEach(colorCode => {
@@ -96,8 +102,7 @@ document.querySelectorAll("main canvas").forEach(canvas => {
     canvas.addEventListener("pointerup"   , e => {
         isDrawing = false
         canvas.releasePointerCapture(e.pointerId)
-        document.querySelector(`#html [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
-        shared.syncTabs(0)
+        document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
     })
     canvas.addEventListener("pointerleave", e => {
         isDrawing = false
@@ -105,7 +110,6 @@ document.querySelectorAll("main canvas").forEach(canvas => {
     })
     
     drawCanvas(canvas)
-    document.dispatchEvent(new Event("scroll"))
 })
 
 })

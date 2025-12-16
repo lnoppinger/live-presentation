@@ -11,8 +11,8 @@ main {
     justify-content: center;
     align-items: center;
     padding: 2vi;
-    height: calc(100vb - 4vi - 4px);
-    width: calc(96vi - 4px);
+    height: calc(100vb - 4vi);
+    width: calc(96vi);
     overflow: auto;
 }
 
@@ -24,19 +24,21 @@ main[data-view=n] {
 main[data-view=n] :is(aside, footer)  {
     position: absolute;
     display: block;
-    top: 1vi;
-    right: 1vi;
-    bottom: 1vi;
-    left: 50vi;
+    top: 0.5vi;
+    right: 0.5vi;
+    bottom: 0.5vi;
+    left: 50.5vi;
     zoom: 2;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 main[data-view=n] footer {
-    top: 50vh;
-    left: 1vi;
-    right: 22vi;
+    top: 50.5vb;
+    left: 0.5vi;
+    right: 21.5vi;
 }
 
-#html, #html-head, main aside, main footer{
+#html-body, #html-head, main aside, main footer{
     display: none;
 }
 
@@ -46,21 +48,53 @@ pre.edit {
     min-height: 150px;
     min-width: 300px;
 }
-/* @media print {
-    section:not([data-shown]) {
-        display: flex;
-    }
-    section {
-        border-bottom: 2px sovar(--black);
-        break-inside: avoid;
-        break-after: auto;
-        min-height: 300px;
-    }
-} */
+
+pre {
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.only-print {
+    display: none;
+}
 
 @media (prefers-color-scheme: dark) {
     body {
         --black: #dddddd;
         --white: #222222;
+    }
+}
+
+@media print {
+    body {
+        --black: black;
+        --white: white;
+    }
+
+    section {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: start;
+        /* border-bottom: 1px solid var(--black); */
+        padding: 20px 0px;
+        width: 100%;
+    }
+    section:nth-child(1) {
+        align-items: center;
+    }
+    main {
+        height: fit-content !important;
+        width: 100%;
+        justify-content: start !important;
+        align-items: start !important;
+        overflow: visible;
+        padding: 0px;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .only-print {
+        display: block;
     }
 }

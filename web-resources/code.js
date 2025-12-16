@@ -1,7 +1,7 @@
-window.ws = new WebSocket(config.codeRunnerUrl)
 window.wsSend = json => {
     try {
         ws.send(JSON.stringify(json))
+        shared.codeRunnerError = false
     } catch(e) {
         wsError
     }
@@ -10,34 +10,13 @@ window.wsError = (e) =>  {
     console.error(e)
     shared.codeRunnerError = true
 }
+
+window.ws = new WebSocket(config.codeRunnerUrl)
 ws.onerror = wsError
 
-window.terminalElem = document.createElement("div")
-terminalElem.id = "terminal"
-terminalElem.classList.add("ignore-key")
-document.body.appendChild(terminalElem)
-
-window.terminal = null
-window.terminalInterval = setInterval(() => {
-    if(window.Terminal == null) return
-
-    terminal = new Terminal({
-        cursorBlink: true,
-        fontSize: 14
-    })
-
-    terminal.open(terminalElem)
-    terminal.onData(data => wsSend({
-        cmd: data
-    }))
-
-    ws.onmessage = e  => terminal.write(e.data)
-    ws.onerror   = e => {
-        wsError(e)
-        terminal.write("\r\n\r\n !!! Code-runner connection error !!!\r\n\r\n")
-    }
-    clearInterval(terminalInterval)
-}, 200)
+window.terminal = {
+    resize: () => {}
+}
 
 window.codeResize = codeBlock => {
     let maxHeight  = 0
@@ -63,97 +42,126 @@ window.codeResize = codeBlock => {
 }
 
 shared.main.addEventListener("resize", e => {
-    const newCols = Math.floor( shared.main.clientWidth / 9 )
-    const newRows = Math.floor( shared.main.clientHeight / 18 )
+    if(shared.main.querySelector("code[data-cmd]") == null || window.terminal == null) return
 
-    if(window.terminal != null) terminal.resize(newCols, newRows)
+    const newCols = Math.floor( (shared.main.clientWidth *0.9 - 12) / 8.5  )
+    const newRows = Math.floor( shared.main.clientHeight*0.9 / 16 )
+
+    terminal.resize(newCols, newRows)
     wsSend({
         cols: newCols,
         rows: newRows
     })
 })
 
-shared.main.addEventListener("click", e => {
-    if(window.lastClickedOn.closest("#terminal") == null &&
-        e.target.closest(".run") == null) delete terminalElem.dataset.shown
-})
-
 shared.main.addEventListener("render", async e => {
-delete document.querySelector("#terminal").dataset.shown
 
-document.querySelectorAll("main > code").forEach(code => {
+document.querySelectorAll("main code[data-cmd]").forEach(code => {
     let codeBlock = code.parentElement.querySelector(".code-block")
     let codeTab = document.createElement("span")
     codeTab.innerText = code.dataset.file
 
-    if(codeBlock == null) {
+    if(codeBlock == null && shared.main.dataset.view != "p") {
         code.dataset.shown = "true"
         code.setAttribute("style", "border-radius: 0 10px 10px 10px")
         codeTab.dataset.shown = "true"
 
         codeBlock = document.createElement("div")
         codeBlock.classList.add("code-block", "ignore-key")
-        codeBlock.dataset.lang = code.dataset.lang
         code.before(codeBlock)
 
         let tabs = document.createElement("div")
-        tabs.classList.add("tabs")
+        tabs.classList.add("tabs", "no-print")
         codeBlock.appendChild(tabs)
 
         let run = document.createElement("span")
         run.innerText = "play_circle"
-        run.classList.add("material-symbols-outlined", "run")
+        run.classList.add("material-symbols-outlined", "run", "no-print")
         run.style.right = "35px"
         codeBlock.appendChild(run)
 
         let copy = document.createElement("span")
         copy.innerText = "content_copy"
-        copy.classList.add("material-symbols-outlined", "copy")
+        copy.classList.add("material-symbols-outlined", "copy", "no-print")
         copy.style.right = "5px"
         codeBlock.appendChild(copy)
     }
 
-    if(!code.dataset.hidden) {
-        codeBlock.firstElementChild.append(codeTab.cloneNode(true))
-        codeBlock.append(codeTab)
+    if(!code.dataset.hidden && shared.main.dataset.view != "p") {
+        codeBlock.firstElementChild.append(codeTab)
+        codeBlock.append(code)
+        code.setAttribute("contenteditable", true)
+
+    } else if(!code.dataset.hidden){
+        code.before(codeTab)
     }
-    codeBlock.append(code)
     code.innerText = code.innerText.trim()
-    code.setAttribute("contenteditable", true)
 })
 
-document.querySelectorAll("main .code-block").forEach(codeBlock => {
+document.querySelectorAll("main:not([data-view='p']) .code-block").forEach(codeBlock => {
     codeResize(codeBlock)
 
     codeBlock.querySelectorAll(".tabs > span").forEach( elem => elem.addEventListener("click", e => {
         codeBlock.querySelectorAll("code"      ).forEach(n => delete n.dataset.shown)
         codeBlock.querySelectorAll(".tabs span").forEach(n => delete n.dataset.shown)
-        elem.dataset.shown = "true"
-        codeBlock.querySelector(`code[data-file='${elem.innerText}']`).dataset.shown = "true"
+        elem.dataset.shown = true
+        codeBlock.querySelector(`code[data-file='${elem.innerText}']`).dataset.shown = true
     }))
 
     codeBlock.querySelector(".run").addEventListener("click", e => {
+        if(window.ws.readyState != 1) window.ws = new WebSocket(config.codeRunnerUrl)
+
+        let terminalElem = document.createElement("div")
+        terminalElem.id = "terminal"
+        terminalElem.classList.add("ignore-key")
+        shared.main.appendChild(terminalElem)
+        terminalElem.addEventListener("focusout", e => {
+            terminalElem.remove()
+        })
+        terminalElem.focus()
+
+        window.terminal = new Terminal({
+            cursorBlink: true,
+            fontSize: 14
+        })
+        terminal.onData(data => wsSend({
+            cmd: data
+        }))
+        terminal.open(terminalElem)
+
+        ws.onmessage = e => terminal != null ? terminal.write(e.data) : null
+        ws.onerror   = e => {
+            wsError(e)
+            terminal.write("\r\n\r\n !!! Code-runner connection error !!!\r\n\r\n")
+        }
+
         let cmd = ""
         let files = []
         document.querySelectorAll("code[data-global]").forEach(c => {
             files.push({
                 name: c.dataset.file,
-                code: c.innerHTML.replace(/<br>/g, "\n")
+                code: c.innerHTML
             })
         })
         codeBlock.querySelectorAll("code").forEach(c => {
             if(c.dataset.shown != null) cmd = c.dataset.cmd
             files.push({
                 name: c.dataset.file,
-                code: c.innerHTML.replace(/<br>/g, "\n")
+                code: c.innerHTML
             })
+        })
+        let decodeTextarea = document.createElement("textarea")
+        files = files.map(file => {
+            decodeTextarea.innerHTML = file.code
+            decodeTextarea.value = decodeTextarea.value.replace(/<br>/g, "\n").replace(/\n\s{0,12}/g, "\n")
+            file.code = decodeTextarea.value
+            return file
         })
         wsSend({
             cmd: "\x03\n clear\n" + cmd + "\n",
             files,
         })
         shared.main.dispatchEvent(new Event("resize"))
-        terminalElem.dataset.shown = true
     })
 
     codeBlock.querySelector(".copy").addEventListener("click", e => {
@@ -164,8 +172,7 @@ document.querySelectorAll("main .code-block").forEach(codeBlock => {
     })
 
     codeBlock.querySelectorAll("code").forEach(elem => elem.addEventListener("keyup", e => {
-        document.querySelector(`#html [data-id='${elem.dataset.id}']`).innerHTML = elem.innerHTML
-        shared.syncTabs(1)
+        document.querySelector(`#html-body [data-id='${elem.dataset.id}']`).innerHTML = elem.innerHTML
         codeResize(codeBlock)
     }))
 })})

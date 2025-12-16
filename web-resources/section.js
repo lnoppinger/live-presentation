@@ -1,89 +1,54 @@
+window.page = 0
 window.query = new URLSearchParams(location.search)
 if(query.has("page") && !isNaN(query.get("page"))) page = Number(query.get("page"))
 
-window.broadcast = new BroadcastChannel("live-presenation-" + document.head.title.toLowerCase().replace(/\W/g, ""))
-broadcast.onmessage = e => {
-    let data = JSON.parse(e.data)
-    let changed = false
-
-    if(data.page != page) {
-        page = data.page
-        changed = true
-    }
-    if(data.lineWidth != shared.lineWidth) {
-        shared.lineWidth = data.lineWidth
-    }
-    if(data.html != document.querySelector("#html").innerHTML) {
-        document.querySelector("#html").innerHTML = data.html
-        changed = true
-    }
-    shared.main.scrollTo({
-        left: data.scrollLeft,
-        top: data.scrollTop,
-        behavior: "smooth"
-    })
-
-    if(changed && e.data.rebuild) {
-        window.dispatchEvent(new Event("DOMContentLoaded"))
-        return
-    }
-    if(changed) shared.main.dispatchEvent( new Event("renderstart") )
-}
-
-shared.syncTabs = (change=0) => { // 1: reload; 2: rebuild
-    broadcast.postMessage(JSON.stringify({
-        page: page,
-        lineWidth: shared.lineWidth,
-        html: document.querySelector("#html").innerHTML,
-        scrollLeft: shared.main.scrollLeft,
-        scrollTop: shared.main.scrollTop,
-        rebuild: change > 2
-    }))
-
-    if(change > 1) {
-        window.dispatchEvent(new Event("DOMContentLoaded"))
-        return
-    }
-    if(change > 0) shared.main.dispatchEvent( new Event("renderstart") )
-}
-
-window.lastClickedOn = shared.main
 shared.main.addEventListener("click", e => {
-    window.lastClickedOn = e.target
+    if(e.target.nodeType == 3) e.target = e.target.parentElement
+    if(shared.lastClickedOn.closest(".ignore-key") != null && e.target.closest(".ignore-key") == null) {
+        shared.main.querySelectorAll(".ignore-key").forEach(elem => {
+            elem.dispatchEvent(new Event("focusout"), {
+                bubbles: true
+            })
+        })
+    }
+    shared.lastClickedOn = e.target
 })
 
 shared.main.addEventListener("keyup", e => {
-    if(window.lastClickedOn.closest(".ignore-key") != null || e.altKey || e.ctrlKey || e.shiftKey) return
+    if(shared.lastClickedOn.closest(".ignore-key") != null || e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) return
+
+    if(["backspace", "arrowleft", "arrowup", " ", "arrowright", "arrowdown", "enter", "esc", "a", "d", "e", "h", "p", "q", "r", "s"]) {
+        shared.main.querySelectorAll(".ignore-key").forEach(elem => {
+            elem.dispatchEvent(new Event("focusout"), {
+                bubbles: true
+            })
+        })
+    }
 
     if(["Backspace", "ArrowLeft", "ArrowUp"].includes(e.key) || (e.key == "Enter" && e.shiftKey)) {
         page--
-        if(page < 0) page = 0
-        shared.syncTabs(1)
+        shared.main.dispatchEvent(new Event("renderstart"))
     }
     if([" ", "ArrowRight", "ArrowDown", "Enter"].includes(e.key)) {
         page++
-        let sections = document.querySelectorAll("#html section")
-        if(page > sections.length) page = sections.length
-        shared.syncTabs(1)
+        shared.main.dispatchEvent(new Event("renderstart"))
     }
 
     if(e.key == "+" || e.key == "*") {
         shared.lineWidth += config.lineWidthStepSize
-        shared.syncTabs()
     }
     if(e.key == "-" || e.key == "_") {
         shared.lineWidth -= config.lineWidthStepSize
         if(shared.lineWidth < 0) shared.lineWidth = 1
-        shared.syncTabs()
     }
 
     if(e.key.toLowerCase() == "a") {
-        document.querySelector("#html").insertBefore(
+        document.querySelector("#html-body").insertBefore(
             document.createElement("section"),
-            document.querySelector(`#html section:nth-child(${page+1})`)
+            document.querySelector(`#html-body section:nth-child(${page+1})`)
         )
         page++
-        shared.syncTabs(1)
+        shared.main.dispatchEvent(new Event("renderstart"))
     }
     if(e.key.toLowerCase() == "d") {
         let newSection = document.createElement("section")
@@ -93,28 +58,34 @@ shared.main.addEventListener("keyup", e => {
 
         document.querySelector("#html").insertBefore(
             newSection,
-            document.querySelector(`#html section:nth-child(${page+1})`)
+            document.querySelector(`#html-body section:nth-child(${page+1})`)
         )
         page++
-        shared.syncTabs(2)
+        shared.main.dispatchEvent(new Event("renderstart"))
     }
 
     if(e.key.toLowerCase() == "e" && page > 0) {
-        let section = document.querySelector(`#html section:nth-child(${page})`).cloneNode(true)
+        shared.main.innerHTML = "<h1> Edit slide HTML </h1>"
+
+        let section = document.querySelector(`#html-body section:nth-child(${page})`).cloneNode(true)
         section.querySelectorAll("*").forEach(elem => delete elem.dataset.id)
 
-        let h1 = document.createElement("h1")
-        h1.innerText = "Edit slide HTML"
-        let p = document.createElement("p")
-        p.innerText = "Press Q to save and exit"
+        let decodeTextarea = document.createElement("textarea")
+        decodeTextarea.innerHTML = section.innerHTML
+        decodeTextarea.value = decodeTextarea.value.replace(/<br>/g, "\n").replace(/\n\s{0,8}/g, "\n")
 
         let pre = document.createElement("pre")
-        pre.classList.add("ignore-key-down", "edit")
-        pre.innerText = section.innerHTML.trim().replace(/\n\s{8}|<br>/g, "\n")
+        pre.classList.add("ignore-key", "edit")
+        pre.innerText = decodeTextarea.value
         pre.contentEditable = true
-
-        shared.main.innerHTML = h1.outerHTML + p.outerHTML + pre.outerHTML
-        shared.main.dataset.view = "e"
+        pre.addEventListener("focusout", e => {
+            decodeTextarea.innerHTML = pre.innerHTML
+            decodeTextarea.value = decodeTextarea.value.replace(/\n/g, "\n        ")
+            document.querySelector(`#html-body section:nth-child(${page})`).innerHTML = decodeTextarea.value
+            shared.main.dispatchEvent(new Event("renderstart"))
+        })
+        shared.main.appendChild(pre)
+        pre.focus()
     }
 
     if(e.key.toLowerCase() == "h") {
@@ -139,38 +110,37 @@ Version 1.0.0" +
     }
 
     if(e.key.toLowerCase() == "m") {
-        window.open(window.location.href, "_blank")
+        window.open("./web-resources/secondary.html?title=" + shared.titleCompact, "_blank")
+        shared.main.dataset.view = "n"
+        setTimeout(() => shared.main.setAttribute("change", "true"), 1000)
     }
 
-    if(e.key.toLowerCase() == "n") {
+    if(e.key.toLowerCase() == "n" && shared.main.dataset.view != "n") {
         shared.main.dataset.view = "n"
+    }
+    if(e.key.toLowerCase() == "n" && shared.main.dataset.view == "n") {
+        delete shared.main.dataset.view
     }
 
     if(e.key.toLowerCase() == "p") {
-        shared.main.innerHTML = document.querySelector("#html").innerHTML
+        let view = shared.main.dataset.view
+        shared.main.dataset.view = "p"
+        shared.main.innerHTML = document.querySelector("#html-body").innerHTML
+        shared.main.dispatchEvent(new Event("render"))
         window.print()
+        view != null ? shared.main.dataset.view = view : delete shared.main.dataset.view
         shared.main.dispatchEvent(new Event("renderstart"))
     }
 
-    if(["esc", "q"].includes(e.key.toLowerCase()) && shared.main.dataset.view == "e") {
-        let data = document.querySelector("main pre").innerHTML.replace(/<br>|<div>|<\/div>/g, "\n").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-        document.querySelector(`#html section:nth-child(${page})`).innerHTML = data
-        shared.syncTabs(2)
-    }
-    if(["esc", "q"].includes(e.key.toLowerCase())) {
-        shared.main.dataset.view = "q"
+    if(["esc", "q", "r"].includes(e.key.toLowerCase())) {
         shared.main.dispatchEvent(new Event("renderstart"))
-    }
-
-    if(e.key.toLowerCase() == "r") {
-        window.dispatchEvent(new Event("DOMContentLoaded"))
     }
 
     if(e.key.toLowerCase() == "s") {
         let text = `<!DOCTYPE html><html lang="${document.documentElement.lang}"><head>`
         text += document.getElementById("html-head").innerHTML
         text += "</head><body>"
-        text += document.getElementById("html").innerHTML
+        text += document.getElementById("html-body").innerHTML
         text += "</body></html>"
 
         let blob = new Blob([text], { type: "text/html" })
@@ -180,15 +150,16 @@ Version 1.0.0" +
         document.body.appendChild(a)
         a.click()
         a.remove()
-        shared.main.dispatchEvent(new Event("renderstart"))
     }
 })
 
 shared.main.addEventListener("renderstart", e =>{
-    if(window.lastClickedOn.closest(".ignore-key") != null) return
+    let sections = document.querySelectorAll("#html-body section")
+    if(page < 0) page = 0
+    if(page > sections.length) page = sections.length
+
     query.set("page", page)
     history.replaceState(null, "", location.origin + location.pathname + "?" + query.toString())
-
     if(page == 0) {
         shared.main.dispatchEvent(new KeyboardEvent("keyup", {
             key: "h"
@@ -196,15 +167,38 @@ shared.main.addEventListener("renderstart", e =>{
         return
     }
 
-    shared.main.innerHTML = document.querySelector(`#html section:nth-child(${page})`).innerHTML
+    let section = sections[page -1].cloneNode(true)
+    function outdent(elem, spaceCount=8) {
+        elem.childNodes.forEach(child => {
+            if(child.nodeType == 3) {
+                let regex = new RegExp(`^ {0,${spaceCount}}`)
+                let lines = child.textContent.split("\n")
+                let shortLines = lines.map(line => line.replace(regex, ""))
+                child.textContent = shortLines.join("\n").replace(/^\n/, "")
+            } else {
+                outdent(child, spaceCount + 4)
+            }
+        })
+    }
+    outdent(section)
+    shared.main.innerHTML = section.innerHTML
+
+    let footer = shared.main.querySelector("footer")
+    if(footer == null) {
+        footer = document.createElement("footer")
+        footer.dataset.id = nextId++
+        shared.main.appendChild(footer)
+        document.querySelector(`#html-body section:nth-child(${page})`).appendChild(footer.cloneNode(true))
+    }
+    footer.contentEditable = true
+    footer.classList.add("ignore-key")
+    footer.addEventListener("save", e => {
+        document.querySelector(`#html-body [data-id='${footer.dataset.id}']`).innerText = footer.innerText
+    })
 
     shared.main.dispatchEvent(new Event("render"))
-    shared.main.dispatchEvent(new Event("renderend"))
     shared.main.dispatchEvent(new Event("resize"))
-})
-
-shared.main.addEventListener("scrollend", e => {
-    // shared.syncTabs(0)
+    shared.main.dispatchEvent(new Event("renderend"))
 })
 
 shared.main.addEventListener("resize", e => {

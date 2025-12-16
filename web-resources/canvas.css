@@ -3,6 +3,10 @@ canvas {
     border-radius: 10px;
     touch-action: none;
 }
+canvas[data-flex] {
+    margin-bottom: 90vh;
+    min-width: calc(100% - 4px);
+}
 
 #colors-bar {
     position: fixed;
@@ -51,5 +55,12 @@ body:has(main[data-view="n"]) #colors-bar {
     bottom: var(--margin);
     pointer-events: auto;
     background: transparent;
-    --margin: -5.5px
+    --margin: -5.5px;
+}
+
+@media print {
+    canvas {
+        margin-bottom: 0;
+        border: none !important;
+    }
 }

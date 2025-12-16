@@ -1,51 +1,3 @@
-// let config = {
-//     bundle: {
-//         resourceUrl: "./web-resources"
-//     },
-//     section: {
-//         page: 0,
-//         query: new URLSearchParams(location.search),
-//         zoomStepSize: 10,
-//         broadcast: new BroadcastChannel("live-presenation"),
-//         syncTabs: () => {},
-//         helpText: "\
-// Space    -> next page<br>\
-// Backspace-> previous page<br>\
-// A        -> add page<br>\
-// D        -> add page with canvas<br>\
-// E        -> edit page<br>\
-// H        -> display help (current view)<br>\
-// M        -> duplicate tab<br>\
-// N        -> show notes<br>\
-// P        -> print<br>\
-// Q        -> return to current page<br>\
-// R        -> trigger rerender<br>\
-// S        -> download html<br>\
-// Ctrl +   -> zoom in<br>\
-// Ctrl -   -> zoom out<br><br>\
-// Version 1.0.0"
-//     },
-//     canvas: {
-//         lineWidth: 3,
-//         lineWidthStepSize: 1,
-//         eraseWidthOffset: 30,
-//         isDrawing: false,
-//         colors: [
-//             "#ff0000",
-//             "#00ff00",
-//             "#0000ff"
-//         ]
-//     },
-//     code: {
-//         url: "ws://localhost:8765",
-//         wsError: false,
-//         ws: null,
-//         terminal: null
-//     },
-//     math: {
-//         throwOnError: false
-//     }
-// }
 const shared = {}
 const config = {
     initialLineWidth: 3,
@@ -57,13 +9,14 @@ const config = {
         "#0000ff"
     ],
     codeRunnerUrl: "ws://localhost:8765",
-    resourceBaseUrl: "./web-resources"
+    resourceBaseUrl: "https://live-presentation.lnoppinger.de/web-resources"
 }
 let nextId = 0
 
 window.addEventListener("DOMContentLoaded", async e => {
-    if(document.querySelector("#html") != null) {
-        document.body.innerHTML = document.querySelector("#html").innerHTML
+    // reset
+    if(document.querySelector("#html-body") != null) {
+        document.body.innerHTML = document.querySelector("#html-body").innerHTML
     }
     if(document.querySelector("#html-head") != null) {
         document.head.innerHTML = document.querySelector("#html-head").innerHTML
@@ -75,14 +28,14 @@ window.addEventListener("DOMContentLoaded", async e => {
         document.head.appendChild(title)
     }
 
-    document.body.querySelectorAll("*:not(script, #html, #html-head)").forEach(elem => {
+    document.body.querySelectorAll("*:not(script, #html-body, #html-head)").forEach(elem => {
         if(elem.dataset.id != null) return
         elem.dataset.id = nextId
         nextId++
     })
     
     let template1 = document.createElement("div")
-    template1.id = "html"
+    template1.id = "html-body"
     template1.innerHTML = document.body.innerHTML
     let template2 = document.createElement("div")
     template2.id = "html-head"
@@ -90,38 +43,31 @@ window.addEventListener("DOMContentLoaded", async e => {
     let main = document.createElement("main")
     main.dataset.view = "q"
     document.body.append(template1, template2, main)
-    document.querySelectorAll("body *:not(script, #html, #html-head, main, #html *, #html-head *)").forEach(e => e.remove())
+    document.querySelectorAll("body *:not(script, #html-body, #html-head, main, #html-body *, #html-head *)").forEach(e => e.remove())
 
-    shared.syncTabs = () => {}
     shared.lineWidth = config.initialLineWidth
     shared.main = main
     shared.codeRunnerError = true
+    shared.titleCompact = document.head.innerText.toLowerCase().replace(/\W/g, "")
+    shared.lastClickedOn = main
 
     let scripts  = [
-        "/section.js"
+        "/canvas.js",
+        "/code.js",
+        "/math.js",
+        "/section.js",
+        "/sync.js",
+        "https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js",
+        "https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js"
     ]
     let styles = [
-        "/section.css"
+        "/canvas.css",
+        "/code.css",
+        "/section.css",
+        "https://cdn.jsdelivr.net/npm/xterm/css/xterm.css",
+        "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined",
+        "https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css"
     ]
-    if(document.querySelector("code") != null) {
-        scripts.push("/code.js")
-        scripts.push("https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js")
-        styles.push("/code.css")
-        styles.push("https://cdn.jsdelivr.net/npm/xterm/css/xterm.css")
-    }
-    if(document.querySelector("canvas") != null) {
-        scripts.push("/canvas.js")
-        styles.push("/canvas.css")
-    }
-    if(document.querySelector("canvas, code, math") != null) {
-        styles.push("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined")
-    }
-    if(document.querySelector("math") != null) {
-        scripts.push("/math.js")
-        scripts.push("https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js")
-        styles.push("/math.css")
-        styles.push("https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css")
-    }
 
     await Promise.all(styles.map( async url => {
         return new Promise( (resolve, reject) => {
@@ -129,7 +75,7 @@ window.addEventListener("DOMContentLoaded", async e => {
             link.rel = "stylesheet"
             link.href = url.charAt(0) == "/" ? config.resourceBaseUrl + url : url
             link.onload = resolve
-            link.onerror = reject
+            link.onerror = () => reject(new Error("Failed to load stylesheet: " + link.href))
             document.head.appendChild(link)
         })
     }))
@@ -141,7 +87,7 @@ window.addEventListener("DOMContentLoaded", async e => {
             script.src = url.charAt(0) == "/" ? config.resourceBaseUrl + url : url
             script.defer = true
             script.onload = resolve
-            script.onerror = reject
+            script.onerror = () => reject(new Error("Failed to load script: " + script.src))
             document.head.appendChild(script)
         })
     }))
@@ -150,11 +96,6 @@ window.addEventListener("DOMContentLoaded", async e => {
     shared.main.dispatchEvent(new Event("renderstart"))
 })
 
-
-// window.addEventListener("resize"   , e => shared.main.dispatchEvent(e))
-// window.addEventListener("close"    , e => shared.main.dispatchEvent(e))
-// window.addEventListener("scroll"   , e => shared.main.dispatchEvent(e))
-// window.addEventListener("scrollend", e => shared.main.dispatchEvent(e))
 document.addEventListener("keyup", e => {
     e.preventDefault()
     if(e.target.closest("main") != null) return
@@ -167,3 +108,12 @@ document.addEventListener("keyup", e => {
     })
     shared.main.dispatchEvent(ev)
 })
+
+window.addEventListener("resize", e => {
+    e.preventDefault()
+    shared.main.dispatchEvent(new Event("resize"))
+})
+
+window.onerror = e => {
+    alert("Someting went wrong.")
+}

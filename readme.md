@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="bundle.js"></script>
+    <script src="https://live-presentation.lnoppinger.de/bundle.js"></script>
     <title> Title </title>
 </head>
 <body>
@@ -19,7 +19,7 @@
             Notes displayed next to the slide on the right
         </aside>
         <footer>
-            Notes displayed below the slide
+            Notes taken while presenting (can be edited)
         </footer>
     </section>
 
@@ -65,7 +65,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <script src="bundle.js"></script>
+    <script src="https://live-presentation.lnoppinger.de/bundle.js"></script>
 </head>
 <body>
     <section>
