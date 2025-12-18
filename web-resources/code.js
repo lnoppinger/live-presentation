@@ -42,11 +42,15 @@ window.codeResize = codeBlock => {
 }
 
 shared.main.addEventListener("resize", e => {
-    if(shared.main.querySelector("code[data-cmd]") == null || window.terminal == null) return
+    let terminalElem = shared.main.querySelector("#terminal")
+    if(terminalElem == null) return
 
-    const newCols = Math.floor( (shared.main.clientWidth *0.9 - 12) / 8.5  )
-    const newRows = Math.floor( shared.main.clientHeight*0.9 / 16 )
+    let terminalCss = getComputedStyle(terminalElem)
+    const newCols = Math.floor( Number(terminalCss.width .replace("px", "")) / 8.5 )
+    const newRows = Math.floor( Number(terminalCss.height.replace("px", "")) / 16  )
 
+    terminalElem.dataset.columns = newCols
+    terminalElem.dataset.rows = newRows
     terminal.resize(newCols, newRows)
     wsSend({
         cols: newCols,
@@ -95,7 +99,7 @@ document.querySelectorAll("main code[data-cmd]").forEach(code => {
     } else if(!code.dataset.hidden){
         code.before(codeTab)
     }
-    code.innerText = code.innerText.trim()
+    code.innerText = code.innerText.replace(/\n/g, "\n    ")
 })
 
 document.querySelectorAll("main:not([data-view='p']) .code-block").forEach(codeBlock => {
@@ -115,9 +119,6 @@ document.querySelectorAll("main:not([data-view='p']) .code-block").forEach(codeB
         terminalElem.id = "terminal"
         terminalElem.classList.add("ignore-key")
         shared.main.appendChild(terminalElem)
-        terminalElem.addEventListener("focusout", e => {
-            terminalElem.remove()
-        })
         terminalElem.focus()
 
         window.terminal = new Terminal({
@@ -128,6 +129,12 @@ document.querySelectorAll("main:not([data-view='p']) .code-block").forEach(codeB
             cmd: data
         }))
         terminal.open(terminalElem)
+        terminal.focus()
+
+        terminalElem.addEventListener("focusout", e => {
+            terminalElem.remove()
+            terminal.dispose()
+        })
 
         ws.onmessage = e => terminal != null ? terminal.write(e.data) : null
         ws.onerror   = e => {

@@ -8,6 +8,7 @@ document.querySelectorAll("main math").forEach(mathElem => {
     mathElem.dataset.text = mathElem.textContent.replace(/\s+/g, "")
     mathElem.innerHTML = outElem.querySelector("math").innerHTML
     mathElem.style.margin = "20px"
+    mathElem.style.cursor = "copy"
 
     mathElem.addEventListener("click", e => {
         navigator.clipboard.writeText(mathElem.dataset.text)

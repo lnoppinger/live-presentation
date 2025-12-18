@@ -3,36 +3,81 @@ broadcast.onmessage = e => {
     if(e.data[0] == "<") return
     let data = JSON.parse(e.data)
 
-    let options = {}
-    Object.keys(data).filter(k => !["id", "name", "height", "width"].includes(k)).forEach(k => {
-        options[k] = data[k]
-    })
+    let elem = document.querySelector("main" + (data.selector == null ? "" : " > " + data.selector))
+    if(elem == null) elem = document.querySelector("main")
 
-    let event
     if(data.name == "resize") {
-        event = new Event("resize", options)
-        shared.main.style.height = String(data.height) + "px"
-        shared.main.style.width  = String(data.width ) + "px"
-    } else if(data.name == "keyup") {
-        event = new KeyboardEvent("keyup", options)
-    } else if(["pointerup", "pointerdown", "pointermove", "pointerleave"].includes(data.name)) {
-        event = new PointerEvent(data.name, options)
-    } else {
-        event = new Event(data.name, options)
-    }
+        shared.main.style.height = String(data.height - data.width*0.04) + "px"
+        shared.main.style.width  = String(data.width*0.96) + "px"
+        broadcast.postMessage(shared.main.outerHTML)
+        elem.dispatchEvent(new Event("resize"))
 
-    document.querySelector("main" + (data.selector == null ? "" : " > " + data.selector)).dispatchEvent(event)
+    } else if(data.name == "scrollend") {
+        shared.main.scrollTo({
+            left: data.left,
+            top:  data.top,
+            behaviour: "smooth"
+        })
+
+    } else if(data.name == "click") {
+        elem.click()
+
+    } else if(data.name == "terminal" && window.terminal != null && window.ws != null) {
+        // terminal.write(data.text)
+        ws.send(JSON.stringify({cmd: data.text}))
+
+    } else if(data.name == "keyup") {
+        elem.dispatchEvent(new KeyboardEvent("keyup", {
+            key: data.key,
+            altKey: data.altKey,
+            ctrlKey: data.ctrlKey,
+            metaKey: data.metaKey,
+            shiftKey: data.shiftKey,
+            bubbles: true
+        }))
+
+    } else if(["pointerdown", "pointermove"].includes(data.name)) {
+        let rect = elem.getBoundingClientRect()
+        let zoom = Number(getComputedStyle(shared.main).getPropertyValue("zoom"))
+        elem.dispatchEvent(new PointerEvent(data.name, {
+            clientX: rect.left + data.offsetX*zoom,
+            clientY: rect.top  + data.offsetY*zoom,
+            bubbles: true
+        }))
+        
+    } else if(["pointerup", "pointerleave"].includes(data.name)) {
+        elem.dispatchEvent(new PointerEvent(data.name, {
+            bubbles: true
+        }))
+    }
 }
 
-window.observerTimeout
+window.updateCounter = 0
+window.needsUpdate = false
+window.preventUpdate = false
 window.observer = new MutationObserver((mutations) => {
-    clearTimeout(window.observerTimeout)
-    observerTimeout = setTimeout(() => {
-        broadcast.postMessage(shared.main.innerHTML)
-    }, 200)
+    if(preventUpdate) {
+        needsUpdate = true
+        return
+    }
+    needsUpdate = false
+    preventUpdate = true
+    broadcast.postMessage(shared.main.outerHTML)
+    setTimeout(() => {
+        preventUpdate = false
+        if(!needsUpdate) return 
+        updateCounter++
+        shared.main.dataset.update = updateCounter
+    }, 10)
 })
 observer.observe(shared.main, {
     childList: true,
     subtree: true,
-    characterData: true
+    characterData: true,
+    attributes: true
+})
+
+shared.main.addEventListener("scroll", e => {
+    shared.main.dataset.scrollTop  = shared.main.scrollTop
+    shared.main.dataset.scrollLeft = shared.main.scrollLeft
 })

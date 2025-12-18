@@ -43,8 +43,10 @@ shared.main.addEventListener("keyup", e => {
     }
 
     if(e.key.toLowerCase() == "a") {
+        let section = document.createElement("section")
+        section.dataset.id = shared.nextId++
         document.querySelector("#html-body").insertBefore(
-            document.createElement("section"),
+            section,
             document.querySelector(`#html-body section:nth-child(${page+1})`)
         )
         page++
@@ -52,11 +54,13 @@ shared.main.addEventListener("keyup", e => {
     }
     if(e.key.toLowerCase() == "d") {
         let newSection = document.createElement("section")
+        newSection.dataset.id = shared.nextId++
         let canvas = document.createElement("canvas")
         canvas.dataset.flex = true
+        canvas.dataset.id = shared.nextId++
         newSection.appendChild(canvas)
 
-        document.querySelector("#html").insertBefore(
+        document.querySelector("#html-body").insertBefore(
             newSection,
             document.querySelector(`#html-body section:nth-child(${page+1})`)
         )
@@ -96,7 +100,7 @@ A        -> add page<br>\
 D        -> add page with canvas<br>\
 E        -> edit page<br>\
 H        -> display help (current view)<br>\
-M        -> duplicate tab<br>\
+M        -> enable presenter mode<br>\
 N        -> show notes<br>\
 P        -> print<br>\
 Q        -> return to current page<br>\
@@ -112,14 +116,15 @@ Version 1.0.0" +
     if(e.key.toLowerCase() == "m") {
         window.open("./web-resources/secondary.html?title=" + shared.titleCompact, "_blank")
         shared.main.dataset.view = "n"
-        setTimeout(() => shared.main.setAttribute("change", "true"), 1000)
     }
 
-    if(e.key.toLowerCase() == "n" && shared.main.dataset.view != "n") {
-        shared.main.dataset.view = "n"
-    }
-    if(e.key.toLowerCase() == "n" && shared.main.dataset.view == "n") {
-        delete shared.main.dataset.view
+    if(e.key.toLowerCase() == "n") {
+        if(shared.main.dataset.view == "n") {
+            delete shared.main.dataset.view
+        } else {
+            shared.main.dataset.view = "n"
+        }
+        shared.main.dispatchEvent(new Event("resize"))
     }
 
     if(e.key.toLowerCase() == "p") {
@@ -167,7 +172,29 @@ shared.main.addEventListener("renderstart", e =>{
         return
     }
 
-    let section = sections[page -1].cloneNode(true)
+    document.querySelectorAll("body > :is(footer, aside)").forEach(elem => elem.remove())
+    shared.main.innerHTML = sections[page -1].innerHTML
+    shared.main.querySelectorAll("footer, aside").forEach(elem => document.body.appendChild(elem))
+
+    let footer = document.body.querySelector("footer")
+    if(footer == null) {
+        footer = document.createElement("footer")
+        footer.dataset.id = shared.nextId++
+        document.body.appendChild(footer)
+        sections[page -1].appendChild(footer.cloneNode(true))
+    }
+    footer.contentEditable = true
+    footer.classList.add("ignore-key")
+    footer.addEventListener("focusout", e => {
+        document.querySelector(`#html-body [data-id='${footer.dataset.id}']`).innerText = footer.innerText
+    })
+
+    shared.main.dispatchEvent(new Event("render"))
+    shared.main.dispatchEvent(new Event("resize"))
+    shared.main.dispatchEvent(new Event("renderend"))
+})
+
+shared.main.addEventListener("render", e => {
     function outdent(elem, spaceCount=8) {
         elem.childNodes.forEach(child => {
             if(child.nodeType == 3) {
@@ -180,28 +207,27 @@ shared.main.addEventListener("renderstart", e =>{
             }
         })
     }
-    outdent(section)
-    shared.main.innerHTML = section.innerHTML
-
-    let footer = shared.main.querySelector("footer")
-    if(footer == null) {
-        footer = document.createElement("footer")
-        footer.dataset.id = nextId++
-        shared.main.appendChild(footer)
-        document.querySelector(`#html-body section:nth-child(${page})`).appendChild(footer.cloneNode(true))
-    }
-    footer.contentEditable = true
-    footer.classList.add("ignore-key")
-    footer.addEventListener("save", e => {
-        document.querySelector(`#html-body [data-id='${footer.dataset.id}']`).innerText = footer.innerText
-    })
-
-    shared.main.dispatchEvent(new Event("render"))
-    shared.main.dispatchEvent(new Event("resize"))
-    shared.main.dispatchEvent(new Event("renderend"))
+    outdent(shared.main)
+    document.querySelectorAll("footer, aside").forEach(elem => outdent(elem, 12))
 })
 
 shared.main.addEventListener("resize", e => {
     shared.main.style.justifyContent = shared.main.scrollHeight > shared.main.clientHeight ? "start" : "center"
     shared.main.style.alignItems     = shared.main.scrollWidth  > shared.main.clientWidth  ? "start" : "center"
+
+    let mainCss = getComputedStyle(shared.main)
+    let height = Number(mainCss.height.replace("px", "")) + window.innerWidth * 0.04
+    let width  = Number(mainCss.width .replace("px", "")) + window.innerWidth * 0.04
+
+    let zoomHeight = window.innerHeight / height 
+    let zoomWidth  = window.innerWidth  / width 
+    if(shared.main.dataset.view == "n") {
+        zoomHeight *= 2/3
+        zoomWidth  *= 2/3
+    }
+    shared.main.style.zoom = Math.min(zoomHeight, zoomWidth)
+
+    shared.main.querySelectorAll("footer, aside, #colors-bar").forEach(elem => {
+        elem.style.zoom = 3 / 2 / shared.main.style.zoom
+    })
 })

@@ -32,7 +32,7 @@ wss.on("connection", ws => {
         try {
             data = JSON.parse(msg)
         } catch {
-            data = { cmd: msg, files: [] }
+            return
         }
 
         if(data.cmd == null) data.cmd = ""

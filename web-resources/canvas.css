@@ -5,7 +5,7 @@ canvas {
 }
 canvas[data-flex] {
     margin-bottom: 90vh;
-    min-width: calc(100% - 4px);
+    min-width: calc(96% - 4px);
 }
 
 #colors-bar {
@@ -19,9 +19,7 @@ canvas[data-flex] {
     align-items: center;
 }
 body:has(main[data-view="n"]) #colors-bar {
-    zoom: 0.7;
-    right: 68vi;
-    bottom: 68vb;
+    zoom: 1;
 }
 
 #colors-bar > .color {

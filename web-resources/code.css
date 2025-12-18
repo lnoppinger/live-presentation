@@ -58,10 +58,11 @@ code[data-cmd] {
 #terminal {
     position: fixed;
     display: block;
-    top: 5vi;
-    left: 5vi;
+    top: 2vw;
+    left: 2vw;
     z-index: 10;
-    width: 90vi;
+    width: 100cqw;
+    height: 100cqh;
 }
 
 @media print {

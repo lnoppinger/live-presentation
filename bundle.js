@@ -28,10 +28,20 @@ window.addEventListener("DOMContentLoaded", async e => {
         document.head.appendChild(title)
     }
 
-    document.body.querySelectorAll("*:not(script, #html-body, #html-head)").forEach(elem => {
-        if(elem.dataset.id != null) return
-        elem.dataset.id = nextId
-        nextId++
+    document.querySelectorAll("pre, code").forEach(elem => {
+        let decodeTextarea = document.createElement("textarea")
+        let deleteEnd = 0
+        elem.querySelectorAll("*").forEach(e => {
+            delete e.dataset.id
+            deleteEnd += e.tagName.length + 3
+        })
+        decodeTextarea.innerHTML = elem.innerHTML.substring(0, elem.innerHTML.length - deleteEnd)
+        decodeTextarea.textContent = decodeTextarea.value
+        elem.innerHTML = decodeTextarea.innerHTML
+    })
+
+    document.body.querySelectorAll("*").forEach(elem => {
+        elem.dataset.id = nextId++
     })
     
     let template1 = document.createElement("div")
@@ -50,6 +60,7 @@ window.addEventListener("DOMContentLoaded", async e => {
     shared.codeRunnerError = true
     shared.titleCompact = document.head.innerText.toLowerCase().replace(/\W/g, "")
     shared.lastClickedOn = main
+    shared.nextId = nextId
 
     let scripts  = [
         "/canvas.js",
@@ -98,7 +109,7 @@ window.addEventListener("DOMContentLoaded", async e => {
 
 document.addEventListener("keyup", e => {
     e.preventDefault()
-    if(e.target.closest("main") != null) return
+    if(e.target.closest("main, footer") != null) return
     const ev = new KeyboardEvent("keyup", {
         key: e.key,
         ctrlKey: e.ctrlKey,
@@ -110,7 +121,6 @@ document.addEventListener("keyup", e => {
 })
 
 window.addEventListener("resize", e => {
-    e.preventDefault()
     shared.main.dispatchEvent(new Event("resize"))
 })
 

@@ -4,41 +4,48 @@ body {
     --white: #dddddd;
     background-color: var(--white);
     color: var(--black);
+    overflow: hidden;
 }
 main {
+    container-type: size;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 2vi;
-    height: calc(100vb - 4vi);
-    width: calc(96vi);
+    padding: 2vw;
+    height: calc(100vh - 4vw - 10px);
+    width: 96vw;
     overflow: auto;
 }
 
 main[data-view=n] {
-    zoom: 0.7;
     border: 2px solid var(--black);
+    border: 2px solid var(--black);
+    height: calc( (100vh - 4vw) * 2 / 3);
+    width: calc( 96vw * 2 / 3);
 }
 
-main[data-view=n] :is(aside, footer)  {
+body:has(main[data-view=n]) > :is(aside, footer)  {
+    zoom: 1;
     position: absolute;
     display: block;
-    top: 0.5vi;
-    right: 0.5vi;
-    bottom: 0.5vi;
-    left: 50.5vi;
-    zoom: 2;
+    top: 0.5vw;
+    right: 0.5vw;
+    bottom: 0.5vw;
+    left: 67vw;
     overflow-x: hidden;
     overflow-y: auto;
 }
-main[data-view=n] footer {
-    top: 50.5vb;
-    left: 0.5vi;
-    right: 21.5vi;
+body:has(main[data-view=n]) > footer {
+    top: 67vh;
+    left: 0.5vw;
+    right: 33.5vw;
 }
 
-#html-body, #html-head, main aside, main footer{
+#html-body, #html-head, body > aside, body > footer{
     display: none;
 }
 
@@ -49,7 +56,7 @@ pre.edit {
     min-width: 300px;
 }
 
-pre {
+pre, aside, footer {
     font-family: monospace;
     white-space: pre-wrap;
 }

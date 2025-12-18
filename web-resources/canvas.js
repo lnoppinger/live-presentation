@@ -19,14 +19,14 @@ window.drawCanvas = (canvas, oldWidth=-1, oldHeight=-1) => {
 }
 
 shared.main.addEventListener("scrollend", e => {
-    let canvas = document.querySelector("main canvas[data-flex]")
-    if(canvas == null || shared.main.view == "p") return
+    let canvas = document.querySelector("main:not([data-view=p]) canvas[data-flex]")
+    if(canvas == null) return
 
     let oldWidth = canvas.width
-    let calcWidth = Math.floor(Number(getComputedStyle(canvas).getPropertyValue("width").replace("px", ""))) - 10
+    let calcWidth = Math.floor(Number(getComputedStyle(canvas).getPropertyValue("width").replace("px", "")))
     if(oldWidth < calcWidth) {
         canvas.width = calcWidth
-        document.querySelector(` [data-id='${canvas.dataset.id}']`).width = calcWidth
+        document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).width = calcWidth
     }
 
     let oldHeight = canvas.height
@@ -38,11 +38,12 @@ shared.main.addEventListener("scrollend", e => {
 
     if(oldHeight < calcHeight || oldWidth < calcWidth) {
         drawCanvas(canvas, oldWidth, oldHeight)
+        canvas.innerHTML = canvas.toDataURL()
     }
 })
 
 shared.main.addEventListener("render", e => {
-if(document.querySelector("main:not([data-view=overview]) canvas") == null) return
+if(document.querySelector("main canvas") == null) return
 
 let colorsBar = document.createElement("div")
 colorsBar.id = "colors-bar"
@@ -80,33 +81,56 @@ document.querySelectorAll("main canvas").forEach(canvas => {
     canvas.addEventListener("pointerdown", e => {
         isDrawing = true
         ctx.beginPath()
-
-        let lineWidth = shared.lineWidth
+        ctx.lineCap = "round"
+        ctx.lineJoin = "round"
+        
+        ctx.lineWidth = shared.lineWidth
+        ctx.globalCompositeOperation = "source-over"
         if(document.querySelector("main .color[data-selected]").classList.contains("eraser")) {
-            lineWidth += config.eraseWidthOffset
+            ctx.lineWidth = shared.lineWidth + config.eraseWidthOffset
+            ctx.globalCompositeOperation = "destination-out"
         }
-        ctx.lineWidth = lineWidth
+
         ctx.strokeStyle = getComputedStyle(document.querySelector("main .color[data-selected]")).getPropertyValue("background-color")
-        let zoom = getComputedStyle(shared.main).getPropertyValue("zoom")
-        ctx.moveTo( e.offsetX/zoom, e.offsetY/zoom )
-        canvas.setPointerCapture(e.pointerId)
+        let rect = canvas.getBoundingClientRect()
+        let zoom = Number(getComputedStyle(shared.main).getPropertyValue("zoom"))
+        ctx.moveTo( (e.clientX - rect.left)/zoom, (e.clientY - rect.top)/zoom )
+        ctx.lineTo( (e.clientX - rect.left)/zoom, (e.clientY - rect.top)/zoom )
+        ctx.stroke()
+
+        setTimeout(() => {
+            if(preventCanvasUpdate) return
+            preventCanvasUpdate = true
+            canvas.innerHTML = canvas.toDataURL()
+            setTimeout(() => preventCanvasUpdate = false, 20)
+        })
     })
 
+    let preventCanvasUpdate = false
     canvas.addEventListener("pointermove", e => {
         if (!isDrawing) return
-        let zoom = getComputedStyle(shared.main).getPropertyValue("zoom")
-        ctx.lineTo( e.offsetX/zoom, e.offsetY/zoom )
+        let rect = canvas.getBoundingClientRect()
+        let zoom = Number(getComputedStyle(shared.main).getPropertyValue("zoom"))
+        ctx.lineTo( (e.clientX - rect.left)/zoom, (e.clientY - rect.top)/zoom )
         ctx.stroke()
+
+        setTimeout(() => {
+            if(preventCanvasUpdate) return
+            preventCanvasUpdate = true
+            canvas.innerHTML = canvas.toDataURL()
+            setTimeout(() => preventCanvasUpdate = false, 20)
+        })
     })
 
     canvas.addEventListener("pointerup"   , e => {
         isDrawing = false
-        canvas.releasePointerCapture(e.pointerId)
+        canvas.innerHTML = canvas.toDataURL()
         document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
     })
     canvas.addEventListener("pointerleave", e => {
         isDrawing = false
-        canvas.releasePointerCapture(e.pointerId)
+        canvas.innerHTML = canvas.toDataURL()
+        document.querySelector(`#html-body [data-id='${canvas.dataset.id}']`).innerHTML = canvas.toDataURL()
     })
     
     drawCanvas(canvas)
