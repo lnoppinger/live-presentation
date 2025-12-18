@@ -1,4 +1,24 @@
 # Live presentation
+Create your presentations in HTML with nice looking math formulas, endless drawing and live and native code execution on your pc via cmd. <br>
+In addition you can glance at your notes on the right and take notes while presenting on the bottom, while a secondary window only shows your presentation. <br>
+It's super easy to edited your slides while presenting and saving the final state either as html or pdf without wasting space.
+
+## Minimal HTML
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script src="https://live-presentation.lnoppinger.de/bundle.js"></script>
+</head>
+<body>
+    <section>
+        <h1> My live presentation </h1>
+    </section>
+    <section>
+        <p> Text for presentation <br> ... </p>
+    </section>
+</body>
+```
 
 ## Full Example HTML
 ```html
@@ -55,25 +75,19 @@
     </section>
 
     <script>
-        config.canvas.colors = ["yellow", "darkgreen", "lightblue", "pink", "violet", "brown", "lightgray", "turquoise", "green", "red", "var(--black)", "blue"]
+        config = {
+            eraseWidthOffset: 30, // eraser is x pixels bigger
+            codeRunnerUrl: "ws://localhost:8765",
+            colors: [ // additional to eraser and black
+                "#ff0000",
+                "#00ff00",
+                "#0000ff"
+            ],
+            initialLineWidth: 3,
+            lineWidthStepSize: 1,
+            resourceBaseUrl: "https://live-presentation.lnoppinger.de/web-resources"
+        }
     </script>
-</body>
-```
-
-## Minimal HTML
-```html
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <script src="https://live-presentation.lnoppinger.de/bundle.js"></script>
-</head>
-<body>
-    <section>
-        <h1> My live presentation </h1>
-    </section>
-    <section>
-        <p> Text for presentation <br> ... </p>
-    </section>
 </body>
 ```
 
