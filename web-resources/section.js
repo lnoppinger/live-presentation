@@ -115,7 +115,7 @@ Version 1.0.0" +
     }
 
     if(e.key.toLowerCase() == "m") {
-        window.open("./web-resources/secondary.html?title=" + shared.titleCompact, "_blank")
+        window.open(config.resourceBaseUrl + "/secondary.html?title=" + shared.titleCompact, "_blank")
         shared.main.dataset.view = "n"
     }
 
@@ -160,6 +160,8 @@ Version 1.0.0" +
 })
 
 shared.main.addEventListener("renderstart", e =>{
+    document.querySelectorAll("body > :is(footer, aside)").forEach(elem => elem.remove())
+    
     let sections = document.querySelectorAll("#html-body section")
     if(page < 0) page = 0
     if(page > sections.length) page = sections.length
@@ -173,17 +175,17 @@ shared.main.addEventListener("renderstart", e =>{
         return
     }
 
-    document.querySelectorAll("body > :is(footer, aside)").forEach(elem => elem.remove())
     shared.main.innerHTML = sections[page -1].innerHTML
     shared.main.querySelectorAll("footer, aside").forEach(elem => document.body.appendChild(elem))
 
-    let footer = document.body.querySelector("footer")
+    let footer = document.querySelector("body > footer")
     if(footer == null) {
         footer = document.createElement("footer")
         footer.dataset.id = shared.nextId++
         document.body.appendChild(footer)
         sections[page -1].appendChild(footer.cloneNode(true))
     }
+    footer.addEventListener("click", e => shared.lastClickedOn = footer)
     footer.contentEditable = true
     footer.classList.add("ignore-key")
     footer.addEventListener("focusout", e => {
