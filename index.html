@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://live-presentation.lnoppinger.de/bundle.js"></script>
+
+    <!-- Title is optional. If not found, h1 is used -->
+    <title> Live presentation </title>
+</head>
+
+<body>
+    <section>
+        <h1>
+            Welcome to Live presentation
+        </h1>
+        <p>
+            Use Arrow keys to navigate the slides ...
+        </p>
+    </section>
+
+    <section>
+        <img src="https://loonylabs.org/wp-content/uploads/2020/03/presentation.jpg">
+        <p>
+            Text for presentation <br>
+            ... <br>
+            <br>
+            Press N to see notes
+        </p>
+        <aside>
+            Notes displayed next to the slide on the right
+        </aside>
+        <footer>
+            Notes taken while presenting (can be edited)
+        </footer>
+    </section>
+
+    <section>
+        <p>
+            For live execution of the code the code-runner.js needs to run on your machine. <br>
+            <br>
+            More details can be found at
+            <a href="https://github.com/lnoppinger/live-presentation"> Github </a>
+        </p>
+        <code data-cmd="java main.java" data-file="main.java"> 
+            public class Main {
+                ...
+            }
+        </code>
+        <code data-cmd="java main.java" data-file="Test.java"> 
+            public class Test {
+                ...
+            }
+        </code>
+        <code data-cmd="java main.java" data-file="test2.java" data-hidden> 
+            public class Test2 {
+                ...
+            }
+        </code>
+    </section>
+
+    <section>
+        <p>
+            Here you can draw anything you linke and as long as you like, the canvas will resize once you reached the bottom
+        </p>
+        <canvas data-flex> </canvas>
+    </section>
+
+    <section>
+        <p>
+            Important math formulas can be displayed clean
+        </p>
+        <math>
+            a^2 + b^2 = c^2
+        </math>
+        <p>
+            And new ones drawn in a fixed size canvas
+        </p>
+        <canvas width="500" height="300"> </canvas>
+    </section>
+
+    <section>
+        <p> Now to the additional navigation features: </p>
+        <pre>
+            Space    -> next slide
+            Backspace-> previous slide
+            A        -> add slide
+            D        -> add slide with canvas
+            E        -> edit slide
+            H        -> display help
+            M        -> enable presenter mode
+            N        -> show notes
+            P        -> print
+            Q        -> return to current slide
+            R        -> reload slide
+            S        -> download html
+            Ctrl +   -> zoom in
+            Ctrl -   -> zoom out
+        </pre>
+    </section>
+
+    <section>
+        <p>
+            Now it's your turn to create a presentation. <br>
+            <br>
+            <br>
+            Simply press s on your keyboard and edit the downloaded HTML file and open it with your browser <br>
+            or <br>
+            Navigate to
+            <a href="https://github.com/lnoppinger/live-presentation"> https://github.com/lnoppinger/live-presentation </a>
+            and copy the Minimal version. <br>
+            <br>
+            <br>
+            For more information about HTML tags refer to this
+            <a href="https://www.w3schools.com/html/default.asp"> HTML Tutorial </a> 
+        </p>
+    </section>
+
+    <section>
+        <p>
+            This is the end.
+        </p>
+    </section>
+
+    <script>
+        config = {
+            eraseWidthOffset: 30, // eraser is x pixels bigger
+            codeRunnerUrl: "ws://localhost:8765",
+            colors: [             // additional to eraser and black
+                "yellow",
+                "lightblue",
+                "pink",
+                "violet",
+                "brown",
+                "lightgray",
+                "turquoise",
+                "green",
+                "red",
+                "blue"
+            ],
+            initialLineWidth: 3,
+            lineWidthStepSize: 1,
+            resourceBaseUrl: "https://live-presentation.lnoppinger.de/web-resources"
+        }
+    </script>
+
+
+</body>
+    <section>
+        <h1> Willkommen zu meiner Präsentation </h1>
+    </section>
+
+    <section>
+        <code data-cmd="CMD" data-file="Test.java">
+class Test {
+  public static void main(String[] args) {
+    System.out.println("Try programiz.pro");
+  }
+}
+        </code>
+    </section>
+
+    <section>
+        <p>
+            Hier ist ein einfaches Tutorial
+        </p>
+        
+        <code data-cmd="java Test.java" data-file="Test.java">
+class Test {
+  public static void main(String[] args) {
+    System.out.println("Try programiz.pro");
+  }
+}
+        </code>
+        <code data-cmd="java Test.java" data-file="Test2.java">
+class Test2 {
+  public static void main(String[] args) {
+    int number = 2;
+    System.out.println("Try programiz.pro number " + number);
+  }
+}
+        </code>
+        <code data-cmd="touch askfjalsjflakjdkajfjaljdjasdfjkasjfklasjfklajsdf.txt" data-file="askfjalsjflakjdkajfjaljdjasdfjkasjfklasjfklajsdf.txt">
+        adsfasdfasdfasdfa
+        </code>
+    </section>
+
+    <section>
+        <code data-cmd="sqlite3 -header :memory: < test.sql" data-file="test.sql">
+CREATE TABLE test(
+    nr int
+);
+INSERT INTO test VALUES(1), (4), (5), (6);
+SELECT * FROM test;
+        </code>
+    </section>
+
+    <section>
+        <p style="margin-bottom: 300px;"> text</p>
+        <canvas data-flex> </canvas>
+    </section>
+
+    <section>
+        <math> a^2 + b^2 = c^2 </math>
+        <math>
+            a_{ij} = d^2 f(p) (e_i, e_j) = \part_{ij} f (p) \phi : \hat mathcal{L}^n (V,W) \rightarrow mathcal{L}^n (V,W)
+        </math>
+        <aside>
+            Das sind wirklich wichtige formeln
+        </aside>
+        <footer>
+            weitere wichtige notizen
+        </footer>
+    </section>
+
+    <section>
+        <p>
+            alkdfjalskjalsdf
+        </p>
+    </section>
+
+    <section>
+        <p>
+            Ende
+        </p>
+    </section>
+
+    <script>
+            config.colors = ["yellow", "darkgreen", "lightblue", "pink", "violet", "brown", "lightgray", "turquoise", "green", "red", "blue"]
+            config.resourceBaseUrl = "./web-resources"
+    </script>
+</body>
+</html>
