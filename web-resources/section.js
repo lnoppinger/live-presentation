@@ -133,9 +133,11 @@ Version 1.0.0" +
         shared.main.dataset.view = "p"
         shared.main.innerHTML = document.querySelector("#html-body").innerHTML
         shared.main.dispatchEvent(new Event("render"))
-        window.print()
-        view != null ? shared.main.dataset.view = view : delete shared.main.dataset.view
-        shared.main.dispatchEvent(new Event("renderstart"))
+        setTimeout(() => {
+            window.print()
+            view != null ? shared.main.dataset.view = view : delete shared.main.dataset.view
+            shared.main.dispatchEvent(new Event("renderstart"))
+        }, 500)
     }
 
     if(["esc", "q", "r"].includes(e.key.toLowerCase())) {
@@ -161,7 +163,7 @@ Version 1.0.0" +
 
 shared.main.addEventListener("renderstart", e =>{
     document.querySelectorAll("body > :is(footer, aside)").forEach(elem => elem.remove())
-    
+
     let sections = document.querySelectorAll("#html-body section")
     if(page < 0) page = 0
     if(page > sections.length) page = sections.length

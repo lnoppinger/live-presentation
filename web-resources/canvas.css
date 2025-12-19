@@ -9,6 +9,7 @@ canvas[data-flex] {
 }
 
 #colors-bar {
+    z-index: 5;
     position: fixed;
     right: 4vi;
     bottom: 3vi;
@@ -58,7 +59,7 @@ body:has(main[data-view="n"]) #colors-bar {
 
 @media print {
     canvas {
-        margin-bottom: 0;
+        margin-bottom: 0 !important;
         border: none !important;
     }
 }
