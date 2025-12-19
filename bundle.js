@@ -105,23 +105,23 @@ window.addEventListener("DOMContentLoaded", async e => {
     console.log("All scripts loaded.")
 
     shared.main.dispatchEvent(new Event("renderstart"))
-})
 
-document.addEventListener("keyup", e => {
-    e.preventDefault()
-    if(e.target.closest("main, footer") != null) return
-    const ev = new KeyboardEvent("keyup", {
-        key: e.key,
-        ctrlKey: e.ctrlKey,
-        shiftKey: e.shiftKey,
-        altKey: e.altKey,
-        metaKey: e.metaKey
+    document.addEventListener("keyup", e => {
+        e.preventDefault()
+        if(e.target.closest("main, footer") != null) return
+        const ev = new KeyboardEvent("keyup", {
+            key: e.key,
+            ctrlKey: e.ctrlKey,
+            shiftKey: e.shiftKey,
+            altKey: e.altKey,
+            metaKey: e.metaKey
+        })
+        shared.main.dispatchEvent(ev)
     })
-    shared.main.dispatchEvent(ev)
-})
 
-window.addEventListener("resize", e => {
-    shared.main.dispatchEvent(new Event("resize"))
+    window.addEventListener("resize", e => {
+        shared.main.dispatchEvent(new Event("resize"))
+    })
 })
 
 window.onerror = e => {

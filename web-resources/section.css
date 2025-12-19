@@ -35,12 +35,12 @@ body:has(main[data-view=n]) > :is(aside, footer)  {
     top: 0.5vw;
     right: 0.5vw;
     bottom: 0.5vw;
-    left: 67vw;
+    left: 69vw;
     overflow-x: hidden;
     overflow-y: auto;
 }
 body:has(main[data-view=n]) > footer {
-    top: 67vh;
+    top: 69vh;
     left: 0.5vw;
     right: 33.5vw;
 }

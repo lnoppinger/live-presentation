@@ -83,6 +83,7 @@ shared.main.addEventListener("keyup", e => {
         pre.innerText = decodeTextarea.value
         pre.contentEditable = true
         pre.addEventListener("focusout", e => {
+            decodeTextarea = document.createElement("textarea")
             decodeTextarea.innerHTML = pre.innerHTML
             decodeTextarea.value = decodeTextarea.value.replace(/\n/g, "\n        ")
             document.querySelector(`#html-body section:nth-child(${page})`).innerHTML = decodeTextarea.value
