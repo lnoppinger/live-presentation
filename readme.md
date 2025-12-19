@@ -45,6 +45,9 @@ webstocket connection to http://localhost:8765 or specified in config.code.url <
 
 ### Installation:
 npm install ws node-pty <br>
-for Windows, Visual Studio build tools 2022 with <br>
-"Desktop development with C++" and <br>
-"MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs" is required
+<br>
+For Windows: <br>
+Visual Studio build tools 2022 with <br>
+- "Desktop development with C++" and <br>
+- "MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs" <br>
+is required
